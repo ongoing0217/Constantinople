@@ -8,3 +8,5 @@ The end goal is to use Tensorflow as main API to achieve a high level go artific
 2019/10/16 Project halted due to academic issues.
 
 2019/10/31 Previously halted project restarted. First part of readsgf.py done.
+
+2019/11/13 Updated version of board.py pushed, many errors fixed and robustness improved.
