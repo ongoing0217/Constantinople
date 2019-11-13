@@ -24,4 +24,4 @@ Sometimes in Go, an exchange of moves(a player plays a move that his opponent mu
 
 2019/10/31 Previously halted project restarted. First part of readsgf.py done.
 
-2019/11/13 Updated version of board.py pushed, many errors fixed and robustness improved.
+2019/11/13 Finished version of board.py pushed, many errors fixed and robustness improved.
