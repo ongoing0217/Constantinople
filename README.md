@@ -16,6 +16,7 @@ the model always selects the moves it think is best in a MCTS, which can be revi
 3. learn from 2 similar positions' difference
 
 Sometimes in Go, an exchange of moves(a player plays a move that his opponent must respond to) can change the game significantly. By training on 2 positions with and without the exchange, the model will learn if a position is favourable to itself and play exchanges when necessary.
+(edit: 3 can be omitted as 2 should include exchanges of moves.)
 
 # Progress
 2019/10/12 GitHub repository created, with a board file that can allow players to play go through python shell(without counting).
