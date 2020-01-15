@@ -19,6 +19,8 @@ Sometimes in Go, an exchange of moves(a player plays a move that his opponent mu
 (edit: 3 can be omitted as 2 should include exchanges of moves.)
 
 # Progress
+2019/9/26 Project started.
+
 2019/10/12 GitHub repository created, with a board file that can allow players to play go through python shell(without counting).
 
 2019/10/16 Project halted due to academic issues.
