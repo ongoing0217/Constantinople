@@ -12,8 +12,6 @@ class board():
         self.past_board_stat=[]
         self.local_gp_list=[]
         self.result=''
-        self.call_count1=0
-        self.call_count2=0
         self.handicap=handicap
         if handicap==0: return
         else:
@@ -57,7 +55,6 @@ class board():
             return False
 
     def get_state(self, x, y):
-        self.call_count2+=1
         if [x, y, 'B'] in self.board_stat: #check for B stones
             return 'B'
         elif [x, y, 'W'] in self.board_stat: #check for W stones
@@ -98,7 +95,6 @@ class board():
         return n
 
     def expand_search(self, coord, stt, mode='n'):
-        self.call_count1+=1
         """Takes a list as input!"""
         if stt=='EDGE': return
         if mode == 'n' and stt == 'EMPTY': #n for normal, c for count
@@ -148,11 +144,11 @@ class board():
             if back_var - len(self.local_gp_list)==0: break
             back_var = len(self.local_gp_list)
 
-    def remove_repeats(self,list_):
-        for elm in list_:
-            if list_.count(elm) >1:
-                list_.remove(elm)
-            else: pass
+#     def remove_repeats(self,list_):
+#         for elm in list_:
+#             if list_.count(elm) >1:
+#                 list_.remove(elm)
+#             else: pass
 
     def count_gp_libs(self):
         #condition:local_gp_list isn't empty
@@ -352,7 +348,7 @@ class board():
         for datum in data_:
             self.play_assume_legal(datum[0], datum[1]) if datum is not 'PASS' else self.Pass()
 
-    def score(self): #Japanese counting
+    def score(self): #Japanese counting, requires all dead stones to be removed from the board before call
         empty_list, area_label, processed = [], [], []
         Bscore, Wscore = 0,0
         self.fill_empty()
