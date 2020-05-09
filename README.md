@@ -34,3 +34,5 @@ Sometimes in Go, an exchange of moves(a player plays a move that his opponent mu
 2020/1/3 Project halted again due to final exams.
 
 2020/1/15 board.py updated to be much faster.
+
+2020/5/8 Project restarted.
