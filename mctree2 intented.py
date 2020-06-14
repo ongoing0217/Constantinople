@@ -590,12 +590,3 @@ class MCtree():
 
     # Playouts: 11532, Win: 48.93%, PV: R4 D16 Q16 D4 P4 R17 Q17 R16 R15 S15 S14 R14 Q15 S13 S16 T14 S17 F17 C3
     # Q3 ->   30772 (V: 51.61%) (N:  4.09%) PV: Q3 D4 D16 R5 C3 D3 C4 C5 B5 B6 C6 D5 B7 B4 A6 B3 P17 P4 P3 O4 N3 Q14 M17 C17 C16 D17
-
-egg=MCtree(models.load_model('model_5x64.h5'))
-playouts=63
-start_time = time.time()
-for i in range(playouts):
-    egg.single_search()
-print(time.time() - start_time, 's')
-#benchmark: leela true zero net 4200 playouts/s at t=0
-
