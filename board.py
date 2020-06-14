@@ -1,4 +1,3 @@
-import timer
 import readsgf
 
 class board():
@@ -418,10 +417,3 @@ class board():
         alphb='abcdefghijklmnopqrs'
         return alphb.index(str_[0])+1, alphb.index(str_[1])+1
 
-if __name__ == '__main__':
-    toast=board(19, 7.5)
-    """toast.load_game('C:\\Users\\admin\\Desktop\\Resonance\\still black and white\\test\\', 'ZENITH_')
-#toast.score()
-    toast.print_board_state()"""
-#print(transformer(toast, toast.board_stat))
-#print("--- %s seconds ---" % (time.time() - start_time))
