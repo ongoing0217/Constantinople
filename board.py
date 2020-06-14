@@ -1,3 +1,4 @@
+import timer
 import readsgf
 
 class board():
@@ -12,13 +13,14 @@ class board():
         self.past_board_stat=[]
         self.local_gp_list=[]
         self.result=''
+        self.force_overwrite_to_play=''
         self.handicap=handicap
         if handicap==0: return
         else:
             if handicap==1:
                 self.komi=0
                 return
-            self.play_hist.append('filler')
+            self.play_hist=[]
             if handicap==2:
                 self.board_stat.extend([[16, 4, 'B'], [4, 16, 'B']])
             elif handicap==3:
@@ -95,7 +97,7 @@ class board():
         return n
 
     def expand_search(self, coord, stt, mode='n'):
-        """Takes a list as input!"""
+        """coord is a list in format [x, y]"""
         if stt=='EDGE': return
         if mode == 'n' and stt == 'EMPTY': #n for normal, c for count
             return
@@ -105,35 +107,38 @@ class board():
         x,y = coord[0], coord[1]
         nb=self.list_sieve(self.get_neighbor_stat(x,y),stt)
 
-        if nb[0] == stt:
-            if [x,y-1,stt] not in self.local_gp_list:
-                if [x,y-1,stt] in self.board_stat:
-                    self.local_gp_list.append([x,y-1,stt])
+        if nb[0] == stt: # switch stmt for python pls
+            vertex = [x,y-1,stt]
+            if vertex not in self.local_gp_list:
+                if vertex in self.board_stat:
+                    self.local_gp_list.append(vertex)
 
         if nb[1] == stt:
-            if [x+1,y,stt] not in self.local_gp_list:
-                if [x+1,y,stt] in self.board_stat:
-                    self.local_gp_list.append([x+1,y,stt])
+            vertex = [x+1,y,stt]
+            if vertex not in self.local_gp_list:
+                if vertex in self.board_stat:
+                    self.local_gp_list.append(vertex)
 
         if nb[2] == stt:
-            if [x,y+1,stt] not in self.local_gp_list:
-                if [x,y+1,stt] in self.board_stat:
-                    self.local_gp_list.append([x,y+1,stt])
+            vertex = [x,y+1,stt]
+            if vertex not in self.local_gp_list:
+                if vertex in self.board_stat:
+                    self.local_gp_list.append(vertex)
 
         if nb[3] == stt:
-            if [x-1,y,stt] not in self.local_gp_list:
-                if [x-1,y,stt] in self.board_stat:
-                    self.local_gp_list.append([x-1,y,stt])
+            vertex = [x-1,y,stt]
+            if vertex not in self.local_gp_list:
+                if vertex in self.board_stat:
+                    self.local_gp_list.append(vertex)
 
     def get_connected_gp_list(self, x, y, stt, mode='n'):
-        searched=[]
         if stt == 'EDGE': return
         self.local_gp_list=[[x,y,stt]]
+        searched=[]
         if stt not in self.get_neighbor_stat(x,y): return #single, only 1 elm in gp
 
         back_var=0
 
-        #if stt is not 'EMPTY': #special case, implement counting of empty spaces when writing counting rules
         while True:
         #one expansion
 
@@ -144,11 +149,11 @@ class board():
             if back_var - len(self.local_gp_list)==0: break
             back_var = len(self.local_gp_list)
 
-#     def remove_repeats(self,list_):
-#         for elm in list_:
-#             if list_.count(elm) >1:
-#                 list_.remove(elm)
-#             else: pass
+    def remove_repeats(self,list_):
+        for elm in list_:
+            if list_.count(elm) >1:
+                list_.remove(elm)
+            else: pass
 
     def count_gp_libs(self):
         #condition:local_gp_list isn't empty
@@ -156,24 +161,13 @@ class board():
         for elm in self.local_gp_list:
             nb=self.get_neighbor_stat(elm[0], elm[1])
             for i in range(4): #get all the vertices of the elements' neighbors
-                list_.append(nb[i])
-
-            if 'EMPTY' in list_: return 1 #not necessary to return the exact liberties of a group
-
-            #still need these below for if I want to count actual liberties of a group later
-
-            #    list_.append(self.get_neighbor_vert(elm)[i])
-            #process the vertices
-        #    self.remove_repeats(list_)
-        #for j in range(len(list_)):
-        #    list_.append(list_[0][2])
-        #    list_.remove(list_[0])
+                if nb[i] == 'EMPTY': return 1
 
         return 0
 
     def will_kill_gp(self, x, y, stt):#is actually will_suicide_gp
-        self.board_stat.append([x,y,stt])
         if stt in self.get_neighbor_stat(x,y):
+            self.board_stat.append([x,y,stt])
             self.get_connected_gp_list(x, y, stt)
             if self.count_gp_libs() == 0:
                 self.board_stat.remove([x,y,stt])
@@ -183,7 +177,6 @@ class board():
                 return False
         else:
             #not connected to any group, how can it kill a group?
-            self.board_stat.remove([x,y,stt])
             return False
 
     def can_be_taken(self, x, y, stt): #indicates whether stones can be taken when move is played
@@ -194,34 +187,34 @@ class board():
         return True if stt not in self.get_neighbor_stat(x, y) else False
 
     def is_legal(self, x, y):
-        ph1, ph2 = [], []
-        stt=self.det_to_play()
         if x>19 or x<1 or y>19 or y<1:
-            return False
+           return False
         elif [x,y,'B'] in self.board_stat or [x,y,'W'] in self.board_stat:
             return False
-        elif not self.will_kill_gp(x, y, stt):
+        stt=self.det_to_play() if self.force_overwrite_to_play == '' else self.force_overwrite_to_play
+        if not self.will_kill_gp(x, y, stt):
             return True
 
         else:
-            if self.get_neighbor_stat(x,y).count('EMPTY') >=1 or stt in self.get_neighbor_stat(x,y): #second stmt is result of 2 days of debugging
+            nb=self.get_neighbor_stat(x,y)
+            if 'EMPTY' in nb or stt in nb: #second stmt is result of 2 days of debugging
                 return True
             elif self.get_neighbor_stat(x,y).count('EMPTY') ==0:
                 self.board_stat.append([x,y,stt])
+                ph1 = self.get_neightbor_vert([x, y])
+                ph2 = []
                 #conditions for 0 liberty play:
                 #1. can take a group
                 #2. can take 1 stone (the position of the stone is not in ko)
                 #3. connected to a gp
 
                 for i in range(4):
-                    ph1.append(self.get_neighbor_vert([x,y])[i])
                     ph2.append('T') if self.can_be_taken(ph1[i][0], ph1[i][1], ph1[i][2]) else ph2.append('F')
 
                 if 'T' not in ph2: return False #play 0 libs and not taking anything
                 else:
                     for i in range(4):
-                        if self.is_alone(ph1[i][0], ph1[i][1], ph[i][2]) and not self.is_ko(ph1[i][0], ph1[i][1]): return True
-                        else: continue
+                        if self.is_alone(ph1[i][0], ph1[i][1], ph1[i][2]) and not self.is_ko(ph1[i][0], ph1[i][1]): return True
 
     def stt_to_sym_handler(self, x, y):
         stt=self.get_state(x,y)
@@ -229,7 +222,7 @@ class board():
             return '*'
         elif stt == 'W':
             return 'O'
-        elif stt == 'B':
+        else:
             return 'X'
 
     def print_board_state(self):
@@ -282,23 +275,29 @@ class board():
 
             else: pass #nothing to take
 
+    def play_check_routine(self, x, y, state):
+        #first need to check legality; if legal, find any stones that can be taken to be taken off the board
+        if self.is_legal(x, y):
+            self.board_stat.append([x, y, state])
+            self.remove_near_captured_stones(x, y)
+            self.play_hist.append([x, y, state])
+            if [x, y, 'EMPTY'] in self.board_stat:
+                self.board_stat.remove([x,y,'EMPTY'])
+
+        else:
+            print("illegal move!")
+            return
+
     def play(self, x, y, state):
-        if state != self.det_to_play():
+        if self.force_overwrite_to_play != '': # no need to check if overwritten state is things other than 'B' or 'W'
+            self.play_check_routine(x, y, self.force_overwrite_to_play)
+
+        elif state != self.det_to_play():
             print("invalid action")
             return
 
         elif state == self.det_to_play():
-            #first need to check legality; if legal, find any stones that can be taken to be taken off the board
-            if self.is_legal(x, y):
-                self.board_stat.append([x, y, state])
-                self.remove_near_captured_stones(x, y)
-                self.play_hist.append([x,y,self.det_to_play()])
-                if [x, y, 'EMPTY'] in self.board_stat:
-                    self.board_stat.remove([x,y,'EMPTY'])
-
-            else:
-                print("illegal move!")
-                return
+            self.play_check_routine(x, y, state)
 
         self.local_gp_list=[]
         self.past_board_stat.append(self.board_stat)
@@ -318,14 +317,6 @@ class board():
         self.board_stat=self.past_board_stat[-1]
         self.past_board_stat=self.past_board_stat[:-1]
 
-    def twoto1(self, x, y):
-        alphb='abcdefghijklmnopqrs'
-        return alphb[x-1] + alphb[y-1]
-
-    def oneto2(self, str_):
-        alphb='abcdefghijklmnopqrs'
-        return alphb.index(str_[0])+1, alphb.index(str_[1])+1
-
     def resign(self):
         self.Pass()
         self.result='W+Resign' if self.det_to_play() == 'W' else 'B+Resign'
@@ -339,16 +330,17 @@ class board():
                 if stt == 'EMPTY':
                     self.board_stat.append([i+1, j+1, stt])
                 else: pass
-				
+
+    @timer.timer
     def load_game(self, _dir, file_name):
         data=readsgf.get_sgf(_dir, file_name)
         data_=readsgf.converter(readsgf.cropper(data)[1])
         self.play_hist=['filler']
         self.board_stat=[]
         for datum in data_:
-            self.play_assume_legal(datum[0], datum[1]) if datum is not 'PASS' else self.Pass()
+            self.play(datum[0], datum[1], self.det_to_play()) if datum is not 'PASS' else self.Pass()
 
-    def score(self): #Japanese counting, requires all dead stones to be removed from the board before call
+    def score(self, mode='default'): #Japanese counting
         empty_list, area_label, processed = [], [], []
         Bscore, Wscore = 0,0
         self.fill_empty()
@@ -382,5 +374,54 @@ class board():
                 Wscore += len(empty_list[i])
             else: continue
 
-        result = str(round(Bscore - Wscore - self.komi, 1)) #+ve if b wins, -ve if w wins
-        self.result='B+' + result if float(result) > 0 else 'W+' + str(round(-float(result), 1)) #Draw counts as w win?
+        result = round(Bscore - Wscore - self.komi, 1) #+ve if b wins, -ve if w wins
+        if mode == 'default':
+            self.result='B+' + str(result) if result > 0 else 'W+' + str(round(-result, 1)) #Draw counts as w win?
+        else:
+            remove_list = []
+            for member in self.board_stat:
+                if member[2] == 'EMPTY': 
+                    remove_list.append(member)
+            for member in remove_list: self.board_stat.remove(member)
+            # If directly invoking the remove method inside the first loop, the index of removal will shift to another member in the list,
+            # causing an unwanted effect
+            return result
+
+    #utility stuff
+    def x_reflect_board_pos(self):
+        """reflect the board with respect to the y-axis at centre of the board."""
+        for pos in self.board_stat:
+            #19, 1 == 1,1
+            #18, 1 == 2,1
+            pos[0] = self.board_size - pos[0] + 1
+
+    def y_reflect_board_pos(self):
+        """reflect the board with respect to the x-axis at centre of the board."""
+        for pos in self.board_stat:
+            #1, 19 == 1,1
+            #1, 18 == 1,2
+            pos[1] = self.board_size - pos[1] + 1
+
+    def rotate_board_clockwise_90deg(self):
+        for pos in self.board_stat:
+            x, y = pos[0], pos[1]
+            #1, 2 == 18, 1
+            #3, 4 == 16, 3
+            pos[0] = self.board_size - y + 1
+            pos[1] = x
+
+    def twoto1(self, x, y):
+        alphb='abcdefghijklmnopqrs'
+        return alphb[x-1] + alphb[y-1]
+
+    def oneto2(self, str_):
+        alphb='abcdefghijklmnopqrs'
+        return alphb.index(str_[0])+1, alphb.index(str_[1])+1
+
+if __name__ == '__main__':
+    toast=board(19, 7.5)
+    """toast.load_game('C:\\Users\\admin\\Desktop\\Resonance\\still black and white\\test\\', 'ZENITH_')
+#toast.score()
+    toast.print_board_state()"""
+#print(transformer(toast, toast.board_stat))
+#print("--- %s seconds ---" % (time.time() - start_time))
