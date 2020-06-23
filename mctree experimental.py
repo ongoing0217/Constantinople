@@ -35,7 +35,6 @@ class MCtree():
         self.base_to_play = 'W' if len(self.base_play_hist) % 2 == 0 else 'B' # Base to play means which player to play at the base position
         self.batched_positions = []
         self.batch_cycle = 0
-        self.total_time = 0
         self.dumbpass_enabled = False
         # About that pass policy...
 
@@ -481,7 +480,6 @@ class MCtree():
         # otherwise, 2 updates are still needed.
         # Case 3: t=0, the base node, impossible since base node already initialized
 
-        start_time = time.time()
         parent = self.node_dict[trunk_name]
         branch = trunk_name + move_played
 
@@ -550,7 +548,6 @@ class MCtree():
         # conditions for batching to stop:
         # 1. reached maximum batch size (8)
         # 2. the branch has really high action value
-        self.total_time += (time.time() - start_time)
         if self.batch_cycle == 8 or parent[6][index] > 0.8: #0.8 just a placeholder for now
             self.eval_batch()
 
@@ -607,11 +604,11 @@ class MCtree():
             raw_seq = raw_seq[2:]
         print(output)
 
-    def search(self, playouts): pass
+    def search(self, playouts):
+        for i in range(playouts):
+            self.single_search()
+        if self.batch_cycle != 1: self.eval_batch()
 
     def output_search_results(self): pass
-
-    # Playouts: 11532, Win: 48.93%, PV: R4 D16 Q16 D4 P4 R17 Q17 R16 R15 S15 S14 R14 Q15 S13 S16 T14 S17 F17 C3
-    # Q3 ->   30772 (V: 51.61%) (N:  4.09%) PV: Q3 D4 D16 R5 C3 D3 C4 C5 B5 B6 C6 D5 B7 B4 A6 B3 P17 P4 P3 O4 N3 Q14 M17 C17 C16 D17
 
 
