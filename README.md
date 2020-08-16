@@ -42,3 +42,5 @@ Sometimes in Go, an exchange of moves(a player plays a move that his opponent mu
 2020/6/23 Batching implemented.
 
 2020/7/27 Performance of the program enhanced greatly. Tree object can now search starting from arbitary positions.
+
+2020/8/16 board.py format changed, coordinates now behave like indices
